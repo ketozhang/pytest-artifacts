@@ -33,5 +33,59 @@ def _artifacts_dir(request):
 
 
 @pytest.fixture
-def bar(request):
-    return request.config.option.dest_foo
+def artifacts(request, _artifacts_dir) -> Generator[ArtifactsRepository, None, None]:  # pylint: disable=invalid-name
+    """Provide an artifact repository to store and access test artifacts for the
+    particular test case.
+
+    Example:
+        Write a file to the artifact repository. Will show up in
+        `$PWD/.artifacts/mytest/file.txt`:
+
+        >>> def mytest(artifacts):
+        ...     with artifacts.open("file.txt", "w") as f:
+        ...         f.write("Hello, World!")
+
+    Yields:
+        ArtifactsRepository: The artifacts repository for the specific test
+        case.
+    """
+    with ArtifactsRepository(request, _artifacts_dir) as repo:
+        yield repo
+
+
+class ArtifactsRepository(AbstractContextManager):
+    """Test artifacts repository. Implemented as a directory located in
+    ``$PWD/.artifacts/``.
+    """
+
+    dir: Path
+    pytest_request: pytest.FixtureRequest
+
+    def __init__(self, request: pytest.FixtureRequest, artifacts_dir) -> None:
+        self.dir = Path(artifacts_dir).resolve() / request.node.name
+        self.pytest_request = request
+        super().__init__()
+
+    @contextmanager
+    def open(self, name: str, mode: str = "r", **kwargs):
+        """Open a file in the artifacts repository for this test case.
+
+        Yield:
+            file: Opened file object
+        """
+        fpath = self.dir / name
+        with fpath.open(mode, **kwargs) as f:
+            yield f
+
+        if fpath.exists():
+            log.debug("Added artifact: %s", fpath)
+
+    def __enter__(self):
+        if self.dir.exists():
+            shutil.rmtree(self.dir)
+        self.dir.mkdir(parents=True)
+
+        return super().__enter__()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
