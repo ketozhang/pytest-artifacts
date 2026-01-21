@@ -53,3 +53,7 @@ source = "vcs"
 [tool.hatch.build.hooks.vcs]
 version-file = "src/pytest_artifacts/_version.py"
 
+[dependency-groups]
+dev = [
+    "ruff>=0.14.13",
+]
