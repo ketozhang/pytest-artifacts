@@ -1,0 +1,55 @@
+[project]
+name = "pytest-artifacts"
+dynamic = ["version"]
+description = "Pytest plugin for managing test artifacts"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+
+authors = [
+    { name = "Keto D. Zhang", email = "keto.zhang@gmail.com" },
+]
+
+maintainers = [
+    { name = "Keto D. Zhang", email = "keto.zhang@gmail.com" },
+]
+
+keywords = ["pytest", "testing", "artifacts", "plugin"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Pytest",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Software Development :: Testing",
+]
+
+dependencies = [
+    "pytest>=6.2.0",
+]
+
+[project.urls]
+Repository = "https://github.com/ketozhang/pytest-artifacts"
+Documentation = "https://github.com/ketozhang/pytest-artifacts"
+"Bug Tracker" = "https://github.com/ketozhang/pytest-artifacts/issues"
+
+[project.entry-points.pytest11]
+artifacts = "pytest_pytest_artifacts.plugin"
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/pytest_artifacts/_version.py"
+
