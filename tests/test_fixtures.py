@@ -37,8 +37,8 @@ def test_fixture_artifacts_dir(pytester, addopts, ini, expected):
 
     # create a temporary pytest test module
     pytester.makepyfile(f"""
-        def test_sth(_artifacts_dir):
-            assert _artifacts_dir == '{expected}'
+        def test_sth(request):
+            assert request.config.artifacts_dir == '{expected}'
     """)
 
     # run pytest with the following cmd args

@@ -25,15 +25,16 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.fixture
-def _artifacts_dir(request):
-    if request.config.option.artifacts_dir is not None:
-        return request.config.option.artifacts_dir
-    return request.config.getini("artifacts_dir")
+def pytest_configure(config):
+    artifacts_dir = config.getoption("--artifacts-dir")
+    if artifacts_dir is None:
+        artifacts_dir = config.getini("artifacts_dir")
+
+    config.artifacts_dir = artifacts_dir
 
 
 @pytest.fixture
-def artifacts(request, _artifacts_dir) -> Generator[ArtifactsRepository, None, None]:  # pylint: disable=invalid-name
+def artifacts(request) -> Generator[ArtifactsRepository, None, None]:  # pylint: disable=invalid-name
     """Provide an artifact repository to store and access test artifacts for the
     particular test case.
 
@@ -49,7 +50,10 @@ def artifacts(request, _artifacts_dir) -> Generator[ArtifactsRepository, None, N
         ArtifactsRepository: The artifacts repository for the specific test
         case.
     """
-    with ArtifactsRepository(request, _artifacts_dir) as repo:
+    artifacts_dir_for_test_case = (
+        Path(request.config.artifacts_dir).resolve() / request.node.name
+    )
+    with ArtifactsRepository(artifacts_dir_for_test_case) as repo:
         yield repo
 
 
@@ -59,11 +63,9 @@ class ArtifactsRepository(AbstractContextManager):
     """
 
     dir: Path
-    pytest_request: pytest.FixtureRequest
 
-    def __init__(self, request: pytest.FixtureRequest, artifacts_dir) -> None:
-        self.dir = Path(artifacts_dir).resolve() / request.node.name
-        self.pytest_request = request
+    def __init__(self, dirpath: Path) -> None:
+        self.dir = dirpath
         super().__init__()
 
     @contextmanager
